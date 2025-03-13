@@ -1,7 +1,7 @@
-import 'package:budgetbuddy/config/currency_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
+import '../config/currency_provider.dart';
 
 class TransactionItem extends StatefulWidget {
   final double amount;
@@ -72,7 +72,7 @@ class _TransactionItemState extends State<TransactionItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "$currencySymbol${widget.amount.toStringAsFixed(2)}",
+                      "$currencySymbol ${widget.amount.toStringAsFixed(2)}",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

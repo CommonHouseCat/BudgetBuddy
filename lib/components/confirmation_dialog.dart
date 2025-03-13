@@ -1,4 +1,5 @@
-import 'package:budgetbuddy/components/my_buttons.dart';
+import '../config/localization/app_localizations.dart';
+import 'my_buttons.dart';
 import 'package:flutter/material.dart';
 
 class ConfirmationDialog extends StatelessWidget {
@@ -19,9 +20,11 @@ class ConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        title: const Text("Confirmation"),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+        title: Text(localizations.translate('confirmation')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -31,14 +34,14 @@ class ConfirmationDialog extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 MyButtons(
-                  text: confirmButtonText,
+                  text: localizations.translate('confirm'),
                   onPressed: onConfirm,
                   buttonColor: Colors.green,
                   textColor: Colors.white,
                 ),
                 const SizedBox(width: 8),
                 MyButtons(
-                  text: "Cancel",
+                  text: localizations.translate('cancel'),
                   onPressed: onCancel,
                   buttonColor: Colors.red,
                   textColor: Colors.white,

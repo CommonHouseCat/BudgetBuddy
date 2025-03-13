@@ -1,6 +1,8 @@
-import 'package:budgetbuddy/components/my_textfield.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
+import '../config/localization/app_localizations.dart';
+import 'my_textfield.dart';
+import 'package:flutter/material.dart';
 
 class BudgetSetupDialog extends StatefulWidget {
   final Function(double, DateTime, DateTime, double) onConfirm;
@@ -18,6 +20,7 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
   final _budgetController = TextEditingController();
   DateTime? _startDate;
   DateTime? _endDate;
+  final logger = Logger();
 
   void _pickStartDate() async {
     final date = await showDatePicker(
@@ -35,9 +38,10 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
   }
 
   void _pickEndDate() async {
-    if(_startDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Please select a start date first.')));
+    final localizations = AppLocalizations.of(context);
+    if (_startDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(localizations.translate('SelectStartDate'))));
       return;
     }
 
@@ -55,28 +59,36 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
   }
 
   void _onConfirm() {
-    final initialBudget = double.tryParse(_budgetController.text);
-    if (initialBudget != null && _startDate != null && _endDate != null) {
-      final days = _endDate!.difference(_startDate!).inDays + 1;
-      final dailyBudget = initialBudget / days;
-      widget.onConfirm(initialBudget, _startDate!, _endDate!, dailyBudget);
-      Navigator.of(context).pop();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Please fill all fields correctly, you cunt.')));
+    try {
+      final localizations = AppLocalizations.of(context);
+      final initialBudget = double.tryParse(_budgetController.text);
+      if (initialBudget != null && _startDate != null && _endDate != null) {
+        final days = _endDate!.difference(_startDate!).inDays + 1;
+        final dailyBudget = initialBudget / days;
+        widget.onConfirm(initialBudget, _startDate!, _endDate!, dailyBudget);
+        Navigator.of(context).pop();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(localizations.translate('FillCorrectlyWarning'))));
+      }
+    } catch (e, stackTrace) {
+      logger.e('Error in _onConfirm', error: e, stackTrace: stackTrace);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return AlertDialog(
-      title: Text('Set Thine Budget'),
+      backgroundColor: Theme.of(context).colorScheme.secondary,
+      title: Text(localizations.translate('Set Your Budget')),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           MyTextfield(
-            hintText: 'Enter your initial budget',
-            labelText: 'Initial Budget',
+            hintText: localizations.translate('Enter your initial budget'),
+            labelText: localizations.translate('Initial Budget'),
             controller: _budgetController,
             keyboardType: TextInputType.number,
             padding: const EdgeInsets.symmetric(horizontal: 18.0),
@@ -85,8 +97,8 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
           ListTile(
             title: Text(
               _startDate == null
-                  ? 'Select Start Date'
-                  : 'Start Date: ${DateFormat('yyyy-MM-dd').format(_startDate!)}',
+                  ? localizations.translate('Select Start Date')
+                  : '${localizations.translate('Start Date:')} ${DateFormat('yyyy-MM-dd').format(_startDate!)}',
             ),
             trailing: Icon(Icons.calendar_today),
             onTap: _pickStartDate,
@@ -94,8 +106,8 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
           ListTile(
             title: Text(
               _endDate == null
-                  ? 'Select End Date'
-                  : 'End Date: ${DateFormat('yyyy-MM-dd').format(_endDate!)}',
+                  ? localizations.translate('Select End Date')
+                  : '${localizations.translate('End Date:')} ${DateFormat('yyyy-MM-dd').format(_endDate!)}',
             ),
             trailing: Icon(Icons.calendar_today),
             onTap: _pickEndDate,
@@ -105,7 +117,7 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
       actions: [
         TextButton(
           onPressed: _onConfirm,
-          child: Text('Confirm'),
+          child: Text(localizations.translate('Confirm')),
         ),
       ],
     );

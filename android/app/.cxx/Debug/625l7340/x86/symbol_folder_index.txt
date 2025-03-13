@@ -1,0 +1,1 @@
+/home/generic/Documents/git_repo/budgetbuddy/build/app/intermediates/cxx/Debug/625l7340/obj/x86

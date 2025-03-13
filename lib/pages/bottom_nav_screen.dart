@@ -1,9 +1,12 @@
-import 'package:budgetbuddy/config/localization/locale_provider.dart';
-import 'package:budgetbuddy/pages/home_screen.dart';
-import 'package:budgetbuddy/pages/settings_screen.dart';
-import 'package:budgetbuddy/pages/statistics_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import '../config/localization/locale_provider.dart';
+import 'calender_screen.dart';
+import 'home_screen.dart';
+import 'settings_screen.dart';
+import 'statistics_screen.dart';
 
 class BottomNavScreen extends StatefulWidget {
   const BottomNavScreen({super.key});
@@ -14,11 +17,31 @@ class BottomNavScreen extends StatefulWidget {
 
 class _BottomNavScreenState extends State<BottomNavScreen> {
   int _selectedIndex = 0;
+  final logger = Logger();
 
   void _navigateBottomBar(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (_selectedIndex != index) {
+      setState(() {
+        _selectedIndex = index;
+        _updateOrientation(index);
+      });
+    }
+  }
+
+  void _updateOrientation(int index) {
+    if (index == 0) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
   }
 
   void _changeLanguageFromSettings(Locale newLocale) {
@@ -27,9 +50,13 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
   }
 
   _wipeData() {
-    setState(() {
-      _pages[0] = const HomeScreen();
-    });
+    try {
+      setState(() {
+        _pages[0] = const HomeScreen();
+      });
+    } catch (e, stackTrace) {
+      logger.e('Error wiping data', error: e, stackTrace: stackTrace);
+    }
   }
 
   late final List<Widget> _pages;
@@ -40,18 +67,31 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
     _pages = [
       const HomeScreen(),
       const StatisticsScreen(),
+      const CalenderScreen(),
       SettingsScreen(
         onLanguageChange: _changeLanguageFromSettings,
         onDataWipe: _wipeData,
       ),
     ];
+    _updateOrientation(_selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 1200),
+        duration: const Duration(milliseconds: 500),
         transitionBuilder: (Widget child, Animation<double> animation) {
           final curvedAnimation = CurvedAnimation(
             parent: animation,
@@ -78,6 +118,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: _navigateBottomBar,
         items: const [
@@ -93,6 +134,12 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
             label: "Statistics",
           ),
 
+          // calender
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            label: "Calender",
+          ),
+
           // settings
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
@@ -102,5 +149,4 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
       ),
     );
   }
-
 }

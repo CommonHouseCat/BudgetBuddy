@@ -1,7 +1,9 @@
-import 'package:budgetbuddy/components/category_spending_pie_chart.dart';
-import 'package:budgetbuddy/components/spending_trend_bar_chart.dart';
-import 'package:budgetbuddy/services/database_service.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
+import '../components/category_spending_pie_chart.dart';
+import '../components/spending_trend_bar_chart.dart';
+import '../config/localization/app_localizations.dart';
+import '../services/database_service.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -13,6 +15,12 @@ class StatisticsScreen extends StatefulWidget {
 class _StatisticsScreenState extends State<StatisticsScreen> {
   Map<String, Map<String, double>> _dailyData = {};
   Map<String, double> _categoryData = {};
+  final logger = Logger();
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -21,62 +29,80 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   void _fetchData() async {
-    final db = DatabaseService.instance;
-    _dailyData = await db.fetchDailyTransactions();
-    _categoryData = await db.fetchCategorySpending();
-    setState(() {});
+    try {
+      final db = DatabaseService.instance;
+      _dailyData = await db.fetchDailyTransactions();
+      _categoryData = await db.fetchCategorySpending();
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e, stackTrace) {
+      logger.e('Error in _fetchData', error: e, stackTrace: stackTrace);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: Text('Statistics')),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF008080),
+        title: Center(
+          child: Text(
+            localizations.translate('statistics'),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 30,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+
       body: SingleChildScrollView(
           child: Column(
-        children: [
-          // Bar chart
-          Text(
-            'Spending Trend',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(
-            height: 300,
-            child: SpendingTrendBarChart(dailyData: _dailyData),
-          ),
+            children: [
+              SizedBox(height: 10),
+              Text(
+                localizations.translate('Spending Trend'),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(
+                height: 300,
+                child: SpendingTrendBarChart(dailyData: _dailyData),
+              ),
+              SizedBox(height: 20),
+              Text(
+                localizations.translate('Spending Category'),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(
+                height: 300,
+                child: CategorySpendingPieChart(categoryData: _categoryData),
+              ),
 
-          SizedBox(height: 20),
+              SizedBox(height: 20),
 
-          // Pie chart
-          Text(
-            'Spending Category',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(
-            height: 300,
-            child: CategorySpendingPieChart(categoryData: _categoryData),
-          ),
-
-          // =========Use it here =====
-          SizedBox(height: 20),
-
-          // Legends
-          _buildLegend(),
-          //======================
-        ],
-      )),
+              // Legends
+              _buildLegend(),
+            ],
+          )),
     );
-  }// ====================== Add this ==============================
+  }
+
   Widget _buildLegend() {
     return Column(
       children: _categoryData.entries.map((entry) {
         final color =
-            Colors.primaries[entry.key.hashCode % Colors.primaries.length];
+        Colors.primaries[entry.key.hashCode % Colors.primaries.length];
         return Padding(
           padding: const EdgeInsets.symmetric(
             vertical: 4.0,
@@ -99,5 +125,4 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       }).toList(),
     );
   }
-  // ================================================================
 }

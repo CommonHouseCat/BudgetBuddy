@@ -9,7 +9,6 @@ class SpendingTrendBarChart extends StatelessWidget {
     required this.dailyData,
   });
 
-  // ================= Add this ==========================
   String formatNumber(double number) {
     if (number >= 1000000) {
       return '${(number / 1000000).toStringAsFixed(number % 1000000 == 0 ? 0 : 1)}M';
@@ -19,7 +18,6 @@ class SpendingTrendBarChart extends StatelessWidget {
       return number.toStringAsFixed(0);
     }
   }
-  // ===================================================
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +52,6 @@ class SpendingTrendBarChart extends StatelessWidget {
         barGroups: barGroups,
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(
-            // =============== Modify This ===========================
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 40,
@@ -66,7 +63,6 @@ class SpendingTrendBarChart extends StatelessWidget {
               },
             ),
           ),
-          // ========================================================
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,

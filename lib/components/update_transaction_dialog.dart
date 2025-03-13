@@ -1,6 +1,8 @@
-import 'package:budgetbuddy/components/my_buttons.dart';
-import 'package:budgetbuddy/components/my_textfield.dart';
-import 'package:budgetbuddy/services/database_service.dart';
+import 'package:logger/logger.dart';
+import '../config/localization/app_localizations.dart';
+import '../services/database_service.dart';
+import 'my_buttons.dart';
+import 'my_textfield.dart';
 import 'package:flutter/material.dart';
 
 class UpdateTransactionDialog extends StatefulWidget {
@@ -23,14 +25,23 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
   late TextEditingController noteController;
   late String selectedType;
   late String selectedTag;
+  final logger = Logger();
 
-  final List<String> tags = ['Food', 'Transport', 'Entertainment', 'Bills', 'Others'];
+  final List<String> tags = [
+    'Food',
+    'Transport',
+    'Entertainment',
+    'Bills',
+    'Others'
+  ];
 
   @override
   void initState() {
     super.initState();
-    amountController = TextEditingController(text: widget.transaction['amount'].toString());
-    noteController = TextEditingController(text: widget.transaction['description']);
+    amountController =
+        TextEditingController(text: widget.transaction['amount'].toString());
+    noteController =
+        TextEditingController(text: widget.transaction['description']);
     selectedType = widget.transaction['type'];
     selectedTag = widget.transaction['tag'];
   }
@@ -43,30 +54,41 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
   }
 
   Future<void> _onPressed() async {
-    double? newAmount = double.tryParse(amountController.text);
-    if (newAmount == null || newAmount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid amount entered")),
+    try {
+      final localizations = AppLocalizations.of(context);
+      double? newAmount = double.tryParse(amountController.text);
+      if (newAmount == null || newAmount <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(localizations.translate('InvalidAmount'))),
+        );
+        return;
+      }
+
+      await DatabaseService.instance.updateTransaction(
+        widget.transaction['id'],
+        newAmount,
+        selectedType,
+        noteController.text,
+        selectedTag,
       );
-      return;
+
+      widget.onUpdate();
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e, stackTrace) {
+      logger.e('Error in _onPressed', error: e, stackTrace: stackTrace);
     }
-
-    await DatabaseService.instance.updateTransaction(
-      widget.transaction['id'],
-      newAmount,
-      selectedType,
-      noteController.text,
-      selectedTag,
-    );
-
-    widget.onUpdate();
-    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return AlertDialog(
-      title: const Text('Update Transaction'),
+      title: Text(
+        localizations.translate('Update Transaction'),
+      ),
       content: SingleChildScrollView(
         child: SizedBox(
           width: double.maxFinite,
@@ -74,16 +96,22 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Amount", style: TextStyle(fontSize: 18)),
+              Text(
+                localizations.translate('Amount'),
+                style: TextStyle(fontSize: 18),
+              ),
               MyTextfield(
-                hintText: "Enter Amount",
+                hintText: localizations.translate('Enter Amount'),
                 controller: amountController,
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 16),
 
               // Transaction Type Selection
-              const Text("Type:", style: TextStyle(fontSize: 18)),
+              Text(
+                localizations.translate('Type: '),
+                style: TextStyle(fontSize: 18),
+              ),
               Row(
                 children: [
                   Radio(
@@ -95,7 +123,9 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
                       });
                     },
                   ),
-                  const Text("Expense"),
+                  Text(
+                    localizations.translate("Expense"),
+                  ),
                   const SizedBox(width: 20),
                   Radio(
                     value: 'income',
@@ -106,16 +136,19 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
                       });
                     },
                   ),
-                  const Text("Income"),
+                  Text(localizations.translate("Income")),
                 ],
               ),
               const SizedBox(height: 16),
 
               // Tag Selection
-              const Text("Tag:", style: TextStyle(fontSize: 18)),
+              Text(
+                localizations.translate("Tag:"),
+                style: TextStyle(fontSize: 18),
+              ),
               DropdownButton<String>(
                 value: selectedTag,
-                isExpanded: true, // Ensure it takes full width
+                isExpanded: true,
                 items: tags.map((tag) {
                   return DropdownMenuItem<String>(
                     value: tag,
@@ -129,9 +162,12 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
               const SizedBox(height: 16),
 
               // Note Input
-              const Text("Note:", style: TextStyle(fontSize: 18)),
+              Text(
+                localizations.translate("Note:"),
+                style: TextStyle(fontSize: 18),
+              ),
               MyTextfield(
-                hintText: "Add a note...",
+                hintText: localizations.translate("Add a note..."),
                 controller: noteController,
                 hasBorder: true,
                 maxLines: 5,
@@ -142,11 +178,11 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
       ),
       actions: [
         MyButtons(
-          text: "Cancel",
+          text: localizations.translate("cancel"),
           onPressed: () => Navigator.pop(context),
         ),
         MyButtons(
-          text: "Confirm",
+          text: localizations.translate("confirm"),
           onPressed: _onPressed,
         ),
       ],

@@ -2,6 +2,8 @@ import 'package:budgetbuddy/components/my_buttons.dart';
 import 'package:budgetbuddy/components/my_textfield.dart';
 import 'package:budgetbuddy/services/database_service.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
+import '../config/localization/app_localizations.dart';
 
 class NewTransaction extends StatefulWidget {
   const NewTransaction({super.key});
@@ -15,39 +17,52 @@ class _NewTransactionState extends State<NewTransaction> {
   final _noteController = TextEditingController();
   String _selectedType = 'expense'; // Default transaction type
   String _selectedTag = 'Food'; // Default transaction tag
+  final logger = Logger();
 
   final List<String> _tags = [
     'Food',
     'Transport',
     'Entertainment',
     'Bills',
+    'Shopping',
+    'Travel',
+    'Health',
+    'Gifts',
     'Others'
   ];
 
   void _saveTransaction() async {
-    double? amount = double.tryParse(_amountController.text);
-    if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Invalid amount. Please enter a positive number.'),
-      ));
-      return;
+    try {
+      double? amount = double.tryParse(_amountController.text);
+      if (amount == null || amount <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Invalid amount. Please enter a positive number.'),
+        ));
+        return;
+      }
+
+      await DatabaseService.instance.insertTransaction(
+        amount: amount,
+        type: _selectedType,
+        description: _noteController.text,
+        tag: _selectedTag,
+      );
+
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
+    } catch (e, stackTrace) {
+      logger.e('Error saving transaction', error: e, stackTrace: stackTrace);
     }
-
-    await DatabaseService.instance.insertTransaction(
-      amount: amount,
-      type: _selectedType,
-      description: _noteController.text,
-      tag: _selectedTag,
-    );
-
-    Navigator.pop(context, true);
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Transaction'),
+        title: Text(localizations.translate('New Transaction')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -59,7 +74,8 @@ class _NewTransactionState extends State<NewTransaction> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("AMOUNT:", style: TextStyle(fontSize: 18)),
+              Text(localizations.translate("AMOUNT:"),
+                  style: TextStyle(fontSize: 18)),
               MyTextfield(
                 hintText: "e.g. 400",
                 controller: _amountController,
@@ -69,7 +85,8 @@ class _NewTransactionState extends State<NewTransaction> {
               SizedBox(height: 16),
               Row(
                 children: [
-                  const Text("TYPE:", style: TextStyle(fontSize: 18)),
+                  Text(localizations.translate("TYPE:"),
+                      style: TextStyle(fontSize: 18)),
                   const SizedBox(width: 20),
                   Radio(
                     value: 'expense',
@@ -80,7 +97,7 @@ class _NewTransactionState extends State<NewTransaction> {
                       });
                     },
                   ),
-                  const Text("Expense"),
+                  Text(localizations.translate("Expense")),
                   Radio(
                     value: 'income',
                     groupValue: _selectedType,
@@ -90,13 +107,14 @@ class _NewTransactionState extends State<NewTransaction> {
                       });
                     },
                   ),
-                  const Text("Income"),
+                  Text(localizations.translate("Income")),
                 ],
               ),
               SizedBox(height: 16),
               Row(
                 children: [
-                  Text("TAG:", style: TextStyle(fontSize: 18)),
+                  Text(localizations.translate("TAG:"),
+                      style: TextStyle(fontSize: 18)),
                   SizedBox(width: 20),
                   DropdownButton<String>(
                     value: _selectedTag,
@@ -115,10 +133,11 @@ class _NewTransactionState extends State<NewTransaction> {
                 ],
               ),
               SizedBox(height: 16),
-              Text("NOTE:", style: TextStyle(fontSize: 18)),
+              Text(localizations.translate("NOTE:"),
+                  style: TextStyle(fontSize: 18)),
               MyTextfield(
-                hintText:
-                    "e.g. Bought The End and The Death part 1 from Amazon",
+                hintText: localizations.translate(
+                    "e.g. Bought The End and The Death part 1 from Amazon"),
                 controller: _noteController,
                 maxLines: 12,
                 hasBorder: true,
@@ -127,7 +146,7 @@ class _NewTransactionState extends State<NewTransaction> {
               Center(
                 child: MyButtons(
                   onPressed: _saveTransaction,
-                  text: "Save Transaction",
+                  text: localizations.translate("Save Transaction"),
                 ),
               ),
             ],

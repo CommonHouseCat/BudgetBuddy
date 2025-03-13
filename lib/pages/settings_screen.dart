@@ -1,16 +1,18 @@
 import 'package:budgetbuddy/components/confirmation_dialog.dart';
 import 'package:budgetbuddy/components/my_buttons.dart';
-import 'package:budgetbuddy/config/localization/app_localizations.dart';
 import 'package:budgetbuddy/services/database_service.dart';
-import 'package:budgetbuddy/config/themes/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:budgetbuddy/config/currency_provider.dart';
-import 'package:budgetbuddy/config/localization/locale_provider.dart';
+import '../config/currency_provider.dart';
+import '../config/localization/app_localizations.dart';
+import '../config/localization/locale_provider.dart';
+import '../config/themes/theme_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   final Function(Locale) onLanguageChange;
   final VoidCallback onDataWipe;
+
 
   const SettingsScreen({
     super.key,
@@ -23,25 +25,33 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final logger = Logger();
+
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final localeProvider = Provider.of<LocaleProvider>(context);
     final currencyProvider = Provider.of<CurrencyProvider>(context);
+    final localizations = AppLocalizations.of(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
 
     Future<void> wipeData() async {
-      await DatabaseService.instance.deleteUserBudget();
-      await DatabaseService.instance.deleteTransactionTable();
-      widget.onDataWipe();
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(localizations.translate("data_wipe_message")),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      try {
+        await DatabaseService.instance.deleteUserBudget();
+        await DatabaseService.instance.deleteTransactionTable();
+        widget.onDataWipe();
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(localizations.translate("data_wipe_message")),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } catch (e, stackTrace) {
+        logger.e('Error wiping data', error: e, stackTrace: stackTrace);
+      }
     }
+
 
     void confirmDeletionDialog() {
       showDialog(
@@ -59,7 +69,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Text(localizations.translate('settings')),
+        backgroundColor: const Color(0xFF008080),
+        title: Center(
+            child: Text(
+              localizations.translate('settings'),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 30,
+                  color: Colors.white,
+              ),
+            )),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -76,7 +95,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(localizations.translate("dark_mode")),
-                  // const Text("Dart Mode"),
                   Switch(
                     value: themeProvider.isDarkMode,
                     onChanged: (value) => themeProvider.toggleTheme(),
@@ -198,7 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               Icons.info_outline,
                               size: 16,
                               color:
-                                  Theme.of(context).colorScheme.inversePrimary,
+                              Theme.of(context).colorScheme.inversePrimary,
                             ),
                           ),
                         ),

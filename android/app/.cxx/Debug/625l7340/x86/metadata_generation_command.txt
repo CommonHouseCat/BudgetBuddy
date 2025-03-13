@@ -1,0 +1,20 @@
+                        -H/home/generic/flutter/packages/flutter_tools/gradle/src/main/groovy
+-DCMAKE_SYSTEM_NAME=Android
+-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+-DCMAKE_SYSTEM_VERSION=21
+-DANDROID_PLATFORM=android-21
+-DANDROID_ABI=x86
+-DCMAKE_ANDROID_ARCH_ABI=x86
+-DANDROID_NDK=/home/generic/Android/Sdk/ndk/26.3.11579264
+-DCMAKE_ANDROID_NDK=/home/generic/Android/Sdk/ndk/26.3.11579264
+-DCMAKE_TOOLCHAIN_FILE=/home/generic/Android/Sdk/ndk/26.3.11579264/build/cmake/android.toolchain.cmake
+-DCMAKE_MAKE_PROGRAM=/home/generic/Android/Sdk/cmake/3.22.1/bin/ninja
+-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/home/generic/Documents/git_repo/budgetbuddy/build/app/intermediates/cxx/Debug/625l7340/obj/x86
+-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=/home/generic/Documents/git_repo/budgetbuddy/build/app/intermediates/cxx/Debug/625l7340/obj/x86
+-DCMAKE_BUILD_TYPE=Debug
+-B/home/generic/Documents/git_repo/budgetbuddy/android/app/.cxx/Debug/625l7340/x86
+-GNinja
+-Wno-dev
+--no-warn-unused-cli
+                        Build command args: []
+                        Version: 2

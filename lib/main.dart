@@ -1,12 +1,16 @@
-import 'package:budgetbuddy/config/currency_provider.dart';
-import 'package:budgetbuddy/config/localization/app_localizations.dart';
-import 'package:budgetbuddy/config/localization/locale_provider.dart';
 import 'package:budgetbuddy/pages/splash_screen.dart';
-import 'package:budgetbuddy/config/themes/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show
+        GlobalCupertinoLocalizations,
+        GlobalMaterialLocalizations,
+        GlobalWidgetsLocalizations;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'config/currency_provider.dart';
+import 'config/localization/app_localizations.dart';
+import 'config/localization/locale_provider.dart';
+import 'config/themes/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,9 +19,9 @@ void main() async {
 
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (context) => ThemeProvider(isDarkMode)),
-      ChangeNotifierProvider(create: (context) => LocaleProvider()),
-      ChangeNotifierProvider(create: (context) => CurrencyProvider()),
+      ChangeNotifierProvider(create: (_) => ThemeProvider(isDarkMode)),
+      ChangeNotifierProvider(create: (_) => CurrencyProvider()),
+      ChangeNotifierProvider(create: (_) => LocaleProvider()),
     ],
     child: const MyApp(),
   ));
@@ -28,7 +32,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       locale: Provider.of<LocaleProvider>(context).locale,

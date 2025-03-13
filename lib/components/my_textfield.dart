@@ -35,10 +35,10 @@ class MyTextfield extends StatelessWidget {
             hintText: hintText,
             border: hasBorder
                 ? OutlineInputBorder(
-                    borderSide: BorderSide(
-                      width: borderWidth,
-                    ),
-                  )
+              borderSide: BorderSide(
+                width: borderWidth,
+              ),
+            )
                 : null,
           ),
         ));
