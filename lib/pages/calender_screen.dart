@@ -7,6 +7,10 @@ import '../components/update_transaction_dialog.dart'
 import '../config/localization/app_localizations.dart';
 import '../services/database_service.dart';
 
+/*
+* The Calender Screen, where the user can view all the transactions
+* by day selected on the calender.
+* */
 class CalenderScreen extends StatefulWidget {
   const CalenderScreen({super.key});
 
@@ -15,9 +19,9 @@ class CalenderScreen extends StatefulWidget {
 }
 
 class _CalenderScreenState extends State<CalenderScreen> {
-  late Map<DateTime, List<Map<String, dynamic>>> _transactions;
-  DateTime _selectedDay = DateTime.now();
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  late Map<DateTime, List<Map<String, dynamic>>> _transactions; // Map of transactions by date.
+  DateTime _selectedDay = DateTime.now(); // Selected date on the calender.
+  CalendarFormat _calendarFormat = CalendarFormat.twoWeeks; // Format of the calender.
   final logger = Logger();
 
   @override
@@ -27,6 +31,7 @@ class _CalenderScreenState extends State<CalenderScreen> {
     _fetchTransactionsForDate(_selectedDay);
   }
 
+  // Fetch transactions for the selected date.
   Future<void> _fetchTransactionsForDate(DateTime selectedDate) async {
     try {
       final db = DatabaseService.instance;
@@ -42,10 +47,12 @@ class _CalenderScreenState extends State<CalenderScreen> {
     }
   }
 
+  // Function to get transactions for a specific day
   List<Map<String, dynamic>> _getEventsForDay(DateTime day) {
     return _transactions[day] ?? [];
   }
 
+  // Delete function similar to the one in Home Screen.
   void deleteTransaction(int id) async {
     try {
       await DatabaseService.instance.deleteTransaction(id);
@@ -55,6 +62,7 @@ class _CalenderScreenState extends State<CalenderScreen> {
     }
   }
 
+  // Edit function similar to the one in Home Screen.
   void editTransactionDialog(Map<String, dynamic> transaction) {
     try {
       showDialog(
@@ -79,23 +87,21 @@ class _CalenderScreenState extends State<CalenderScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
-
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF008080),
         title: Center(
           child: Text(
             localizations.translate('CalenderScreen'),
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 30,
-              color: Colors.white,
             ),
           ),
         ),
       ),
       body: Column(
         children: [
+          // The interactable calender
           TableCalendar(
             focusedDay: _selectedDay,
             firstDay: DateTime(2000),
@@ -115,9 +121,12 @@ class _CalenderScreenState extends State<CalenderScreen> {
               });
             },
           ),
+          // Display the transactions for the selected date.
           Expanded(
             child: _transactions[_selectedDay] == null
-                ? const Center(child: Text("No transactions found"))
+                ? Center(
+                child:
+                Text(localizations.translate("No transactions found")))
                 : ListView.builder(
               itemCount: _transactions[_selectedDay]!.length,
               itemBuilder: (context, index) {

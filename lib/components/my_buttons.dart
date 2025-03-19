@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/*
+* A custom button
+* */
 class MyButtons extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;

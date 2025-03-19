@@ -13,6 +13,7 @@ import 'config/localization/locale_provider.dart';
 import 'config/themes/theme_provider.dart';
 
 void main() async {
+  // Ensure Flutter bindings are initialized before interacting with the Flutter engine.
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final isDarkMode = prefs.getBool('isDarkMode') ?? false;
@@ -36,14 +37,18 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       locale: Provider.of<LocaleProvider>(context).locale,
       supportedLocales: const [Locale('en'), Locale('vi')],
+      theme: Provider.of<ThemeProvider>(context).themeData,
+      //List manages app localization
       localizationsDelegates: const [
-        AppLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+        AppLocalizationsDelegate(), // Custom delegate for app-specific translations
+        GlobalMaterialLocalizations
+            .delegate, // Handles Material widget translations (buttons, dialogs, etc.)
+        GlobalWidgetsLocalizations
+            .delegate, // Sets text direction (LTR/RTL) and basic widget localization
+        GlobalCupertinoLocalizations
+            .delegate, // Handles Cupertino (iOS-style) widget translations
       ],
       home: SplashScreen(),
-      theme: Provider.of<ThemeProvider>(context).themeData,
     );
   }
 }

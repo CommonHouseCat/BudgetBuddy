@@ -1,6 +1,10 @@
-import 'package:budgetbuddy/pages/bottom_nav_screen.dart';
 import 'package:flutter/material.dart';
+import 'bottom_nav_screen.dart';
 
+/*
+* This is the splash screen of the app.
+* It is displayed when the app first launches.
+* */
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -10,6 +14,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
+  // Wait for 3 seconds before navigating to the bottom navigation screen.
   void initState() {
     super.initState();
     Future.delayed(Duration(seconds: 3), () {
@@ -22,6 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
+  // Create a route animation to navigate to the bottom navigation screen.
   Route _createRoute() {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => BottomNavScreen(),
@@ -45,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF008080),
+      backgroundColor: Color.fromARGB(255, 0, 172, 186),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -69,3 +75,4 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
+

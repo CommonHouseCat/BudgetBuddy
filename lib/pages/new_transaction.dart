@@ -1,10 +1,13 @@
-import 'package:budgetbuddy/components/my_buttons.dart';
-import 'package:budgetbuddy/components/my_textfield.dart';
-import 'package:budgetbuddy/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import '../components/my_buttons.dart';
+import '../components/my_textfield.dart';
 import '../config/localization/app_localizations.dart';
+import '../services/database_service.dart';
 
+/*
+* An entire page dedicated to create a new transaction.
+* */
 class NewTransaction extends StatefulWidget {
   const NewTransaction({super.key});
 
@@ -15,8 +18,8 @@ class NewTransaction extends StatefulWidget {
 class _NewTransactionState extends State<NewTransaction> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
-  String _selectedType = 'expense'; // Default transaction type
-  String _selectedTag = 'Food'; // Default transaction tag
+  String _selectedType = 'expense';
+  String _selectedTag = 'Food';
   final logger = Logger();
 
   final List<String> _tags = [
@@ -31,6 +34,7 @@ class _NewTransactionState extends State<NewTransaction> {
     'Others'
   ];
 
+  // Save transaction to database if amount value is correct.
   void _saveTransaction() async {
     try {
       double? amount = double.tryParse(_amountController.text);
@@ -74,6 +78,7 @@ class _NewTransactionState extends State<NewTransaction> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Amount input
               Text(localizations.translate("AMOUNT:"),
                   style: TextStyle(fontSize: 18)),
               MyTextfield(
@@ -83,6 +88,8 @@ class _NewTransactionState extends State<NewTransaction> {
                 hasBorder: true,
               ),
               SizedBox(height: 16),
+
+              // Type selection radio buttons (expense or income).
               Row(
                 children: [
                   Text(localizations.translate("TYPE:"),
@@ -111,6 +118,8 @@ class _NewTransactionState extends State<NewTransaction> {
                 ],
               ),
               SizedBox(height: 16),
+
+              // Tag combo box selection.
               Row(
                 children: [
                   Text(localizations.translate("TAG:"),
@@ -121,7 +130,7 @@ class _NewTransactionState extends State<NewTransaction> {
                     items: _tags.map((tag) {
                       return DropdownMenuItem<String>(
                         value: tag,
-                        child: Text(tag),
+                        child: Text(localizations.translate(tag)),
                       );
                     }).toList(),
                     onChanged: (value) {
@@ -133,6 +142,8 @@ class _NewTransactionState extends State<NewTransaction> {
                 ],
               ),
               SizedBox(height: 16),
+
+              // Note input section.
               Text(localizations.translate("NOTE:"),
                   style: TextStyle(fontSize: 18)),
               MyTextfield(
@@ -143,6 +154,8 @@ class _NewTransactionState extends State<NewTransaction> {
                 hasBorder: true,
               ),
               SizedBox(height: 16),
+
+              // Save button
               Center(
                 child: MyButtons(
                   onPressed: _saveTransaction,
@@ -156,3 +169,4 @@ class _NewTransactionState extends State<NewTransaction> {
     );
   }
 }
+

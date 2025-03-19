@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/*
+* A ThemeData instance that defines the light mode theme for the application.
+*/
 ThemeData lightMode = ThemeData(
   colorScheme: ColorScheme.light(
     surface: Colors.grey.shade300, // background

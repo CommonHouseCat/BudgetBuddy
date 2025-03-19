@@ -1,19 +1,21 @@
 import 'dart:async';
 import 'package:animated_flip_counter/animated_flip_counter.dart';
-import 'package:budgetbuddy/components/budget_setup_dialog.dart';
-import 'package:budgetbuddy/components/my_buttons.dart';
-import 'package:budgetbuddy/components/transaction_item.dart';
-import 'package:budgetbuddy/components/update_transaction_dialog.dart';
-import 'package:budgetbuddy/services/database_service.dart';
-import 'package:budgetbuddy/pages/new_transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-
+import '../components/budget_setup_dialog.dart';
+import '../components/my_buttons.dart';
+import '../components/transaction_item.dart';
+import '../components/update_transaction_dialog.dart';
 import '../config/currency_provider.dart';
 import '../config/localization/app_localizations.dart';
+import '../services/database_service.dart';
+import 'new_transaction.dart';
 
+/*
+* The Home Screen of the app, where the daily budget and the transactions are displayed.
+* */
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -35,6 +37,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _checkBudget();
     _loadTransactions();
+    /*
+    * This is used to check for the current date and update days left by
+    * refreshing the UI every minute when the app is active.
+    * */
     _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       if (mounted) {
         setState(() {});
@@ -52,6 +58,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkBudget();
   }
 
+  /*
+  * This function is used to check budget, if the user budget fetched from
+  * database is null, set all variables to null and call the show budget dialog.
+  * Otherwise, set the variables to the values pulled from the database.
+  * Also used to check if the days left counter is 0, if it is, trigger the
+  * _showCompletionDialog function.
+  * */
   Future<void> _checkBudget() async {
     try {
       final userBudget = await DatabaseService.instance.getUserBudget();
@@ -86,6 +99,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /*
+  * Shows the dialog for user to set the budget and date range
+  *  and insert those into the database.
+  * */
   void _showBudgetSetupDialog() {
     try {
       showDialog(
@@ -117,14 +134,19 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /*
+  * Used to show a congratulatory dialog when the user finished the budget period,
+  * Wipe data if hit OK button
+  * */
   void _showCompletionDialog() {
+    final localizations = AppLocalizations.of(context);
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text("Congratulations!"),
-        content:
-        const Text("You have successfully completed your budget period."),
+        title: Text(localizations.translate("Congratulations!")),
+        content: Text(localizations.translate(
+            "You have successfully completed your budget period.")),
         actions: [
           MyButtons(
             text: "OK",
@@ -138,6 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Wipe all data
   void _wipeBudget() async {
     try {
       final db = DatabaseService.instance;
@@ -157,13 +180,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Used to calculate the days left
   String _getDaysLeft() {
+    final localizations = AppLocalizations.of(context);
     if (_startDate == null || _endDate == null) return "";
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    if (today.isBefore(_startDate!)) return "Not yet!";
+    // If the budget period is before current date
+    if (today.isBefore(_startDate!)) return localizations.translate("Not yet!");
     if (today.isAfter(_endDate!)) {
       return "0";
     }
@@ -171,6 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return (_endDate!.difference(today).inDays + 1).toString();
   }
 
+  // Returns a static date range based on start and end date (e.g. Mar 18 - Mar 19)
   String _getDateRange() {
     if (_startDate == null || _endDate == null) return "";
 
@@ -181,8 +208,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return "($start - $end)";
   }
 
+  // List to store transaction data
   List<Map<String, dynamic>> _transactions = [];
 
+  /*
+  * Function used for loading transaction data from the database to be displayed
+  * or reload after a transaction is added or deleted, as well as updating the
+  * _dailyBudget value.
+  * */
   void _loadTransactions() async {
     try {
       final db = DatabaseService.instance;
@@ -203,6 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Delete a transaction and reload the _transactions list.
   void deleteTransaction(int id) async {
     try {
       await DatabaseService.instance.deleteTransaction(id);
@@ -212,6 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Edit a transaction and reload the _transactions list.
   void _editTransactionDialog(Map<String, dynamic> transaction) {
     try {
       showDialog(
@@ -228,6 +263,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /*
+  * A widget used to build the budget overview section in portrait mode.
+  * Display the Daily budget, days left counter and day range.
+  * */
   Widget _buildBudgetOverview(BuildContext context) {
     final currencyProvider = Provider.of<CurrencyProvider>(context);
     final currencySymbol = currencyProvider.currencySymbol;
@@ -238,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
       height: 140,
       decoration: BoxDecoration(
         color:
-        _isOverBudget ? const Color(0xFF9e1b32) : const Color(0xFF008080),
+        _isOverBudget ? const Color(0xFF9e1b32) : const Color(0xFF0BA6B3),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
@@ -260,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             )
                 : AnimatedFlipCounter(
-              duration: const Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 400),
               value: _dailyBudget ?? 0,
               thousandSeparator: ',',
               prefix: '$currencySymbol ',
@@ -285,10 +324,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Portrait layout.
   Widget _buildPortraitLayout(BuildContext context) {
     return Column(
       children: [
         _buildBudgetOverview(context),
+        // Transaction.
         Expanded(
           child: ListView.builder(
             itemCount: _transactions.length,
@@ -311,74 +352,81 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildLandscapeLayout(BuildContext context) {
+  /*
+ * A widget used to build the budget overview section for landscape mode
+ * Displays the Daily budget, days left counter and day range on the left side.
+ */
+  Widget _buildBudgetOverviewLandscape(BuildContext context) {
     final currencyProvider = Provider.of<CurrencyProvider>(context);
     final currencySymbol = currencyProvider.currencySymbol;
     final localizations = AppLocalizations.of(context);
 
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            // left side: budget overview
-            color: _isOverBudget
-                ? const Color(0xFF9e1b32)
-                : const Color(0xFF008080),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Center(
-                  child: Text(
-                    localizations.translate("Daily Budget"),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 35.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: _isOverBudget
-                      ? Text(
-                    localizations.translate("Over budget mate!"),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                      : AnimatedFlipCounter(
-                    duration: const Duration(milliseconds: 500),
-                    value: _dailyBudget ?? 0,
-                    thousandSeparator: ',',
-                    prefix: '$currencySymbol ',
-                    fractionDigits: 2,
-                    textStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Center(
-                  child: Text(
-                    '${localizations.translate('Days Left:')} ${_getDaysLeft()} ${_getDateRange()}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.0,
-                    ),
-                  ),
-                ),
-              ],
+    return Container(
+      color: _isOverBudget ? const Color(0xFF9e1b32) : const Color(0xFF0BA6B3),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Center(
+            child: Text(
+              localizations.translate("Daily Budget"),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 35.0,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
+          const SizedBox(height: 20),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: _isOverBudget
+                ? Text(
+              localizations.translate("Over budget mate!"),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            )
+                : AnimatedFlipCounter(
+              duration: const Duration(milliseconds: 500),
+              value: _dailyBudget ?? 0,
+              thousandSeparator: ',',
+              prefix: '$currencySymbol ',
+              fractionDigits: 2,
+              textStyle: const TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: Text(
+              '${localizations.translate('Days Left:')} ${_getDaysLeft()} ${_getDateRange()}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16.0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+// Landscape layout.
+  Widget _buildLandscapeLayout(BuildContext context) {
+    return Row(
+      children: [
+        // Left side - Budget Overview.
+        Expanded(
+          child: _buildBudgetOverviewLandscape(context),
         ),
-        // Right side - Transactions
+        // Right side - Transactions.
         Expanded(
           child: Stack(
             children: [
@@ -409,13 +457,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
+    // A flag to keep track of device orientation.
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: isLandscape
-          ? null
+          ? null // Hides if in landscape mode.
           : AppBar(
         title: Center(
           child: Text(localizations.translate("Daily Budget"),
@@ -427,7 +476,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         backgroundColor: _isOverBudget
             ? const Color(0xFF9e1b32)
-            : const Color(0xFF008080),
+            : const Color(0xFF0BA6B3),
         centerTitle: true,
       ),
       body: isLandscape
@@ -435,6 +484,7 @@ class _HomeScreenState extends State<HomeScreen> {
           : _buildPortraitLayout(context),
 
 
+      // Floating action button to transits into the new transaction page with animation.
       floatingActionButton: GestureDetector(
           onTap: () async {
             final result = await Navigator.push(
@@ -451,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 56.0,
               height: 56.0,
               decoration: const BoxDecoration(
-                color: Color(0xFF008080),
+                color: Color(0xFF0BA6B3),
                 borderRadius: BorderRadius.all(Radius.circular(12.0)),
               ),
               child: const Icon(
@@ -465,3 +515,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+

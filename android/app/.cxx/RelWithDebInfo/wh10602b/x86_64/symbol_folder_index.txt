@@ -1,0 +1,1 @@
+/home/generic/Documents/git_repo/budgetbuddy/build/app/intermediates/cxx/RelWithDebInfo/wh10602b/obj/x86_64

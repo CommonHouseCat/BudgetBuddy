@@ -5,8 +5,11 @@ import 'my_buttons.dart';
 import 'my_textfield.dart';
 import 'package:flutter/material.dart';
 
+/*
+* Displays a dialog for updating transaction item's details
+* */
 class UpdateTransactionDialog extends StatefulWidget {
-  final Map<String, dynamic> transaction;
+  final Map<String, dynamic> transaction; // Map containing transaction details
   final Function onUpdate;
 
   const UpdateTransactionDialog({
@@ -35,6 +38,7 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
     'Others'
   ];
 
+  // Initialize controllers and selected values with data from the transaction.
   @override
   void initState() {
     super.initState();
@@ -46,6 +50,7 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
     selectedTag = widget.transaction['tag'];
   }
 
+  // Dispose the controllers to prevent memory leaks.
   @override
   void dispose() {
     amountController.dispose();
@@ -53,10 +58,12 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
     super.dispose();
   }
 
+  // Update transaction details and close the dialog.
   Future<void> _onPressed() async {
     try {
       final localizations = AppLocalizations.of(context);
       double? newAmount = double.tryParse(amountController.text);
+      // Validate input amount
       if (newAmount == null || newAmount <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(localizations.translate('InvalidAmount'))),
@@ -64,6 +71,7 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
         return;
       }
 
+      // Update the changes to database
       await DatabaseService.instance.updateTransaction(
         widget.transaction['id'],
         newAmount,
@@ -72,6 +80,10 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
         selectedTag,
       );
 
+      /*
+      * Trigger onUpdate callback (_loadTransactions in Home Screen),
+      * then closes the dialog
+      * */
       widget.onUpdate();
       if (mounted) {
         Navigator.pop(context);
@@ -189,3 +201,4 @@ class _UpdateTransactionDialogState extends State<UpdateTransactionDialog> {
     );
   }
 }
+

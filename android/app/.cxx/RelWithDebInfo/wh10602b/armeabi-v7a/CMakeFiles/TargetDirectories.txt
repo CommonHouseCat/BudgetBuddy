@@ -1,0 +1,2 @@
+/home/generic/Documents/git_repo/budgetbuddy/android/app/.cxx/RelWithDebInfo/wh10602b/armeabi-v7a/CMakeFiles/edit_cache.dir
+/home/generic/Documents/git_repo/budgetbuddy/android/app/.cxx/RelWithDebInfo/wh10602b/armeabi-v7a/CMakeFiles/rebuild_cache.dir

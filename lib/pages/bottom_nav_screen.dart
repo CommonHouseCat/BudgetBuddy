@@ -1,13 +1,14 @@
+import 'package:budgetbuddy/pages/statistics_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
-import 'package:provider/provider.dart';
-import '../config/localization/locale_provider.dart';
 import 'calender_screen.dart';
 import 'home_screen.dart';
 import 'settings_screen.dart';
-import 'statistics_screen.dart';
 
+/*
+* Bottom navigation bar that handles transition between pages.
+* */
 class BottomNavScreen extends StatefulWidget {
   const BottomNavScreen({super.key});
 
@@ -16,9 +17,15 @@ class BottomNavScreen extends StatefulWidget {
 }
 
 class _BottomNavScreenState extends State<BottomNavScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 0; // Keep track of which page is currently active
   final logger = Logger();
 
+  /*
+  * Function that handles bottom nav item taps,
+  * Check if the tapped index is different from the current index.
+  * If it is, update the state and navigate to the new page.
+  * If it is the same, do nothing.
+  * */
   void _navigateBottomBar(int index) {
     if (_selectedIndex != index) {
       setState(() {
@@ -28,8 +35,14 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
     }
   }
 
+  /*
+  * Function that handles the orientation of the app.
+  * Currently, only Home Screen support both portrait and landscape mode.
+  * While all other screens are lock in portrait mode.
+  * This is nothing more than a showcase of Responsive layouts.
+  * */
   void _updateOrientation(int index) {
-    if (index == 0) {
+    if (index == 0) { // index = 0 is Home Screen.
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
@@ -44,14 +57,15 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
     }
   }
 
-  void _changeLanguageFromSettings(Locale newLocale) {
-    final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
-    localeProvider.setLocale(newLocale);
-  }
-
+  /*
+  * This function prevent the app crashing after wiping all data, in Setting Screen,
+  * from all tables by resetting the Home Screen variables (e.g. _dailyBudget,
+  * _startDate, etc.)to their initial states.
+  * */
   _wipeData() {
     try {
       setState(() {
+        // Replaces all current Home Screen instances with a new one
         _pages[0] = const HomeScreen();
       });
     } catch (e, stackTrace) {
@@ -59,6 +73,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
     }
   }
 
+  // List to hold the widgets for each bottom navigation screen
   late final List<Widget> _pages;
 
   @override
@@ -69,11 +84,10 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
       const StatisticsScreen(),
       const CalenderScreen(),
       SettingsScreen(
-        onLanguageChange: _changeLanguageFromSettings,
         onDataWipe: _wipeData,
       ),
     ];
-    _updateOrientation(_selectedIndex);
+    _updateOrientation(_selectedIndex); // Set the initial device orientation
   }
 
   @override
@@ -90,7 +104,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedSwitcher(
+      body: AnimatedSwitcher( // Used for smooth transition between screen
         duration: const Duration(milliseconds: 500),
         transitionBuilder: (Widget child, Animation<double> animation) {
           final curvedAnimation = CurvedAnimation(
@@ -102,13 +116,14 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
             child: child,
           );
         },
+        // Use a Stack to display/hide a screen based on which _selectedIndex is active
         child: Stack(
-          key: ValueKey<int>(_selectedIndex),
+          key: ValueKey<int>(_selectedIndex), // Used to trigger a rebuild
           children: _pages.asMap().entries.map((entry) {
             int index = entry.key;
             Widget page = entry.value;
             return Offstage(
-              offstage: _selectedIndex != index,
+              offstage: _selectedIndex != index, // Hides if index is not active
               child: TickerMode(
                 enabled: _selectedIndex == index,
                 child: page,
@@ -118,7 +133,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
+        type: BottomNavigationBarType.fixed, // Ensures all items are visible
         currentIndex: _selectedIndex,
         onTap: _navigateBottomBar,
         items: const [

@@ -28,12 +28,21 @@ class DatabaseService {
 
   DatabaseService._constructor();
 
+  /*
+  * If the database instance exists, do nothing.
+  * Otherwise, create the database instance.
+  * */
   Future<Database> get database async {
     if (_db != null) return _db!;
     _db = await getDatabase();
     return _db!;
   }
 
+  /*
+  * Initializes and returns the database instance by
+  * Getting the database directory, creating a full path
+  * and using said path to creates the tables.
+  * */
   Future<Database> getDatabase() async {
     try {
       final databaseDirPath = await getDatabasesPath();
@@ -67,6 +76,7 @@ class DatabaseService {
     }
   }
 
+  // Wipe _userBudgetTable.
   Future<void> deleteUserBudget() async {
     try {
       final db = await database;
@@ -76,6 +86,7 @@ class DatabaseService {
     }
   }
 
+  // Wipe _transactionTable.
   Future<void> deleteTransactionTable() async {
     try {
       final db = await database;
@@ -86,12 +97,14 @@ class DatabaseService {
     }
   }
 
+  // Fetch data from _userBudgetTable.
   Future<Map<String, dynamic>?> getUserBudget() async {
     final db = await database;
     final result = await db.query(_userBudgetTable);
     return result.isNotEmpty ? result.first : null;
   }
 
+  // Inserts a new budget record.
   Future<void> insertUserBudget({
     required double initialBudget,
     required DateTime startDate,
@@ -100,6 +113,7 @@ class DatabaseService {
   }) async {
     try {
       final db = await database;
+      // Just making sure the date format fits before inserting.
       final String formattedStartDate =
       DateFormat('yyyy-MM-dd').format(startDate);
       final String formattedEndDate = DateFormat('yyyy-MM-dd').format(endDate);
@@ -114,6 +128,10 @@ class DatabaseService {
     }
   }
 
+  /*
+  * A helper function that updates the daily budget column
+  * after each transaction interaction (add, delete, edit).
+  * */
   Future<void> _updateDailyBudget(double change) async {
     try {
       final db = await database;
@@ -135,6 +153,7 @@ class DatabaseService {
     }
   }
 
+  // Inserts a new transaction record.
   Future<void> insertTransaction({
     required double amount,
     required String type,
@@ -153,7 +172,7 @@ class DatabaseService {
         _transactionColumnDescription: description,
         _transactionColumnTag: tag,
       });
-
+      // Adjust daily budget based on transaction type.
       if (type == "income") {
         await _updateDailyBudget(amount);
       } else {
@@ -164,6 +183,7 @@ class DatabaseService {
     }
   }
 
+  // Fetch data from _transactionTable.
   Future<List<Map<String, dynamic>>> getTransaction() async {
     try {
       final db = await database;
@@ -175,6 +195,7 @@ class DatabaseService {
     }
   }
 
+  // Updates a transaction record.
   Future<void> updateTransaction(int id, double newAmount, String newType,
       String description, String tag) async {
     try {
@@ -192,12 +213,14 @@ class DatabaseService {
         oldTransaction[_transactionColumnAmount] as double;
         final String oldType = oldTransaction[_transactionColumnType] as String;
 
+        // Revert the daily budget change for the old transaction type.
         if (oldType == "income") {
           await _updateDailyBudget(-oldAmount);
         } else {
           await _updateDailyBudget(oldAmount);
         }
 
+        // Apply the new daily budget change for the new transaction type.
         if (newType == "income") {
           await _updateDailyBudget(newAmount);
         } else {
@@ -221,6 +244,7 @@ class DatabaseService {
     }
   }
 
+  // Deletes a transaction record.
   Future<void> deleteTransaction(int id) async {
     try {
       final db = await database;
@@ -236,6 +260,7 @@ class DatabaseService {
         final double amount = transaction[_transactionColumnAmount] as double;
         final String type = transaction[_transactionColumnType] as String;
 
+        // Revert the daily budget change for the transaction type.
         if (type == "income") {
           await _updateDailyBudget(-amount);
         } else {
@@ -253,6 +278,7 @@ class DatabaseService {
     }
   }
 
+  // Fetch a map of dates (keys) and their corresponding income and expense amounts (values).
   Future<Map<String, Map<String, double>>> fetchDailyTransactions() async {
     try {
       final db = DatabaseService.instance;
@@ -286,6 +312,7 @@ class DatabaseService {
     }
   }
 
+  // Fetch a map of categories (keys) and their corresponding spending amounts (values).
   Future<Map<String, double>> fetchCategorySpending() async {
     try {
       final db = DatabaseService.instance;
@@ -310,6 +337,7 @@ class DatabaseService {
 
   }
 
+  // Fetch transaction records for a specific date.
   Future<List<Map<String, dynamic>>> fetchTransactionsForDate(
       DateTime selectedDate) async {
     try {

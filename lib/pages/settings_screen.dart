@@ -1,22 +1,23 @@
-import 'package:budgetbuddy/components/confirmation_dialog.dart';
-import 'package:budgetbuddy/components/my_buttons.dart';
-import 'package:budgetbuddy/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import '../components/confirmation_dialog.dart';
+import '../components/my_buttons.dart';
 import '../config/currency_provider.dart';
 import '../config/localization/app_localizations.dart';
 import '../config/localization/locale_provider.dart';
 import '../config/themes/theme_provider.dart';
+import '../services/database_service.dart';
 
+/*
+* The Settings Screen, where the user can change theme, language, currency,
+* delete all data and view about app info.
+* */
 class SettingsScreen extends StatefulWidget {
-  final Function(Locale) onLanguageChange;
   final VoidCallback onDataWipe;
-
 
   const SettingsScreen({
     super.key,
-    required this.onLanguageChange,
     required this.onDataWipe,
   });
 
@@ -34,11 +35,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final localizations = AppLocalizations.of(context);
     final localeProvider = Provider.of<LocaleProvider>(context);
 
+    // Wipe all data and also reset the Home Screen state.
     Future<void> wipeData() async {
       try {
         await DatabaseService.instance.deleteUserBudget();
         await DatabaseService.instance.deleteTransactionTable();
-        widget.onDataWipe();
+        widget.onDataWipe(); // Callback
         if (!context.mounted) return;
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -52,7 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     }
 
-
+    // The confirm deletion dialog for wiping data (button).
     void confirmDeletionDialog() {
       showDialog(
         context: context,
@@ -69,14 +71,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF008080),
         title: Center(
             child: Text(
               localizations.translate('settings'),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 30,
-                  color: Colors.white,
               ),
             )),
       ),

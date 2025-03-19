@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+/*
+* A bar chart displaying spending trends for each day.
+* */
 class SpendingTrendBarChart extends StatelessWidget {
+  // A map of date strings (keys) and corresponding income and expense amounts (values).
   final Map<String, Map<String, double>> dailyData;
 
   const SpendingTrendBarChart({
@@ -9,6 +13,7 @@ class SpendingTrendBarChart extends StatelessWidget {
     required this.dailyData,
   });
 
+  // Helper function to format number with K (thousands) or M (Millions) suffix.
   String formatNumber(double number) {
     if (number >= 1000000) {
       return '${(number / 1000000).toStringAsFixed(number % 1000000 == 0 ? 0 : 1)}M';
@@ -21,9 +26,15 @@ class SpendingTrendBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // List that holds the data for each group of bars in the chart.
     List<BarChartGroupData> barGroups = [];
-    int index = 0;
+    int index = 0; // Index for the x-axis (date positions).
 
+    /*
+     * Constructs bar chart groups from daily income and expense data.
+     * For each day, creates a group with income (green) and expense (red) bars.
+     * Missing income/expense values are treated as zero.
+     */
     dailyData.forEach((date, values) {
       double income = values['income'] ?? 0.0;
       double expense = values['expense'] ?? 0.0;
@@ -49,8 +60,9 @@ class SpendingTrendBarChart extends StatelessWidget {
 
     return BarChart(
       BarChartData(
-        barGroups: barGroups,
+        barGroups: barGroups, // list of the bar groups (data).
         titlesData: FlTitlesData(
+          // y-axis title.
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -63,9 +75,14 @@ class SpendingTrendBarChart extends StatelessWidget {
               },
             ),
           ),
+          // x-axis title.
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
+              /*
+              * Convert index to int, check if it's within the range of keys
+              * in dailyData, If yes display the date, otherwise return empty text.
+              * */
               getTitlesWidget: (double value, TitleMeta meta) {
                 int index = value.toInt();
                 if (index < dailyData.keys.length) {
@@ -75,9 +92,11 @@ class SpendingTrendBarChart extends StatelessWidget {
               },
             ),
           ),
+          // Remove top and right titles.
           rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
+        // Showing border around the chart.
         borderData: FlBorderData(
           show: true,
           border: Border.all(

@@ -4,7 +4,13 @@ import '../config/localization/app_localizations.dart';
 import 'my_textfield.dart';
 import 'package:flutter/material.dart';
 
+/*
+* A dialog that prompts the user to set budget amount and date range.
+* It appears if the userBudgetTable is empty either due to
+* first-time app launch or user wipe the userBudgetTable.
+* */
 class BudgetSetupDialog extends StatefulWidget {
+  // A callback function that for when the user confirms the budget setup.
   final Function(double, DateTime, DateTime, double) onConfirm;
 
   const BudgetSetupDialog({
@@ -22,6 +28,7 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
   DateTime? _endDate;
   final logger = Logger();
 
+  // Show date picker for start date
   void _pickStartDate() async {
     final date = await showDatePicker(
       context: context,
@@ -29,6 +36,8 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
     );
+    // If a start date is selected,
+    // update the _startDate and reset _endDate to null
     if (date != null) {
       setState(() {
         _startDate = date;
@@ -37,6 +46,7 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
     }
   }
 
+  // Show date picker for end date
   void _pickEndDate() async {
     final localizations = AppLocalizations.of(context);
     if (_startDate == null) {
@@ -44,7 +54,6 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
           SnackBar(content: Text(localizations.translate('SelectStartDate'))));
       return;
     }
-
     final date = await showDatePicker(
       context: context,
       initialDate: _startDate!.add(const Duration(days: 1)),
@@ -58,10 +67,18 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
     }
   }
 
+  /*
+  * If all field are filled,
+  * calculate the number of days between start and end dates,
+  * calculate daily budget,
+  * pass them to the onConfirm callback function
+  * and close the dialog.
+  * */
   void _onConfirm() {
     try {
       final localizations = AppLocalizations.of(context);
       final initialBudget = double.tryParse(_budgetController.text);
+
       if (initialBudget != null && _startDate != null && _endDate != null) {
         final days = _endDate!.difference(_startDate!).inDays + 1;
         final dailyBudget = initialBudget / days;
@@ -86,6 +103,8 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+
+          // The initial budget input field
           MyTextfield(
             hintText: localizations.translate('Enter your initial budget'),
             labelText: localizations.translate('Initial Budget'),
@@ -93,7 +112,10 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
             keyboardType: TextInputType.number,
             padding: const EdgeInsets.symmetric(horizontal: 18.0),
           ),
+
           SizedBox(height: 20),
+
+          // Start date picker
           ListTile(
             title: Text(
               _startDate == null
@@ -103,6 +125,8 @@ class _BudgetSetupDialogState extends State<BudgetSetupDialog> {
             trailing: Icon(Icons.calendar_today),
             onTap: _pickStartDate,
           ),
+
+          // End date picker
           ListTile(
             title: Text(
               _endDate == null

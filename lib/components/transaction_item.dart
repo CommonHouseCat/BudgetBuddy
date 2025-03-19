@@ -3,6 +3,10 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 import '../config/currency_provider.dart';
 
+/*
+* Represents a single transaction item in a list.
+* Used in home screen and calendar screen.
+* */
 class TransactionItem extends StatefulWidget {
   final double amount;
   final String type;
@@ -28,7 +32,7 @@ class TransactionItem extends StatefulWidget {
 }
 
 class _TransactionItemState extends State<TransactionItem> {
-  bool _isExpanded = false;
+  bool _isExpanded = false; // // Keeps track of whether the item is expanded or not.
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +41,11 @@ class _TransactionItemState extends State<TransactionItem> {
 
     return Padding(
       padding: const EdgeInsets.only(right: 20.0, left: 20.0, top: 10.0),
+      /*
+      * A slidable widget,
+      * slide start-to-end to edit the item,
+      * slide end-to-start to delete the item.
+      * */
       child: Slidable(
         startActionPane: ActionPane(motion: StretchMotion(), children: [
           SlidableAction(
@@ -52,19 +61,24 @@ class _TransactionItemState extends State<TransactionItem> {
             backgroundColor: Colors.red.shade300,
           )
         ]),
+        // Toggle the _isExpanded state when the item is tapped.
         child: GestureDetector(
           onTap: () {
             setState(() {
               _isExpanded = !_isExpanded;
             });
           },
-          child: AnimatedContainer(
+
+          // The main container for the transaction item.
+          child: AnimatedContainer( // This is for smooth expansion animation.s
             duration: const Duration(milliseconds: 300),
             padding: EdgeInsets.all(15.0),
             decoration: BoxDecoration(
               color: widget.type == "expense" ? Colors.red : Colors.green,
               borderRadius: BorderRadius.circular(20),
             ),
+
+            // The design
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -94,14 +108,20 @@ class _TransactionItemState extends State<TransactionItem> {
                   ),
                 ),
                 SizedBox(height: 10),
+
+                /*
+                * Animates the display of the note,
+                * toggling between a truncated (single line)
+                * and full version (multiple lines) based on _isExpanded.
+                * */
                 AnimatedCrossFade(
-                  firstChild: Text(
+                  firstChild: Text( // Truncated note
                     widget.note,
                     style: const TextStyle(color: Colors.white),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-                  secondChild: Text(
+                  secondChild: Text( // Full note
                     widget.note,
                     style: const TextStyle(color: Colors.white),
                   ),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/*
+* A custom textfield
+* */
 class MyTextfield extends StatelessWidget {
   final String hintText;
   final String labelText;
@@ -25,22 +28,23 @@ class MyTextfield extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: padding,
-        child: TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          decoration: InputDecoration(
-            labelText: labelText,
-            hintText: hintText,
-            border: hasBorder
-                ? OutlineInputBorder(
-              borderSide: BorderSide(
-                width: borderWidth,
-              ),
-            )
-                : null,
-          ),
-        ));
+      padding: padding,
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: labelText,
+          hintText: hintText,
+          border: hasBorder
+              ? OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: borderWidth,
+                  ),
+                )
+              : null,
+        ),
+      ),
+    );
   }
 }
