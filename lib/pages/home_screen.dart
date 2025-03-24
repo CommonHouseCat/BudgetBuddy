@@ -493,22 +493,17 @@ class _HomeScreenState extends State<HomeScreen> {
             );
             if (result == true) _loadTransactions();
           },
-          child: AnimatedScale(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-            scale: 1.0,
-            child: Container(
-              width: 56.0,
-              height: 56.0,
-              decoration: const BoxDecoration(
-                color: Color(0xFF0BA6B3),
-                borderRadius: BorderRadius.all(Radius.circular(12.0)),
-              ),
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-                size: 30.0,
-              ),
+          child: Container(
+            width: 56.0,
+            height: 56.0,
+            decoration: const BoxDecoration(
+              color: Color(0xFF0BA6B3),
+              borderRadius: BorderRadius.all(Radius.circular(12.0)),
+            ),
+            child: const Icon(
+              Icons.add,
+              color: Colors.white,
+              size: 30.0,
             ),
           )
       ),
